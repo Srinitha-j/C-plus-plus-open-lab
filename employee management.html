@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>HR Payroll Web Portal</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#0f172a;
+color:white;
+margin:0;
+}
+
+header{
+background:#1e293b;
+padding:20px;
+text-align:center;
+font-size:24px;
+}
+
+.container{
+padding:20px;
+}
+
+input,select{
+padding:8px;
+margin:5px;
+}
+
+button{
+padding:8px 15px;
+margin:5px;
+cursor:pointer;
+background:#38bdf8;
+border:none;
+color:black;
+font-weight:bold;
+}
+
+table{
+width:100%;
+margin-top:20px;
+border-collapse:collapse;
+}
+
+th,td{
+border:1px solid #555;
+padding:10px;
+text-align:center;
+}
+
+#dashboard{
+display:none;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>HR Payroll Management Portal</header>
+
+<div class="container">
+
+<div id="login">
+
+<h2>HR Login</h2>
+
+<input id="user" placeholder="Username">
+<input id="pass" type="password" placeholder="Password">
+
+<br>
+
+<button onclick="login()">Login</button>
+
+</div>
+
+
+<div id="dashboard">
+
+<h2>Employee Management</h2>
+
+<input id="id" placeholder="Employee ID">
+<input id="name" placeholder="Name">
+<input id="dept" placeholder="Department">
+<input id="pos" placeholder="Position">
+<input id="rate" placeholder="Hourly Rate">
+<input id="hours" placeholder="Hours Worked">
+<input id="overtime" placeholder="Overtime Hours">
+
+<br>
+
+<button onclick="addEmployee()">Add Employee</button>
+<button onclick="removeEmployee()">Remove Employee</button>
+<button onclick="promoteEmployee()">Promote</button>
+<button onclick="increment()">Add Increment</button>
+<button onclick="leave()">Apply Leave</button>
+
+<br><br>
+
+<button onclick="salarySlip()">Generate Salary Slip</button>
+<button onclick="statistics()">Department Statistics</button>
+<button onclick="analytics()">Payroll Analytics</button>
+
+<h2>Employees</h2>
+
+<table id="table">
+
+<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Department</th>
+<th>Position</th>
+<th>Salary</th>
+</tr>
+
+</table>
+
+</div>
+
+</div>
+
+<script>
+
+let employees=[]
+
+function login(){
+
+let u=document.getElementById("user").value
+let p=document.getElementById("pass").value
+
+if(u==="admin" && p==="1234"){
+
+document.getElementById("login").style.display="none"
+document.getElementById("dashboard").style.display="block"
+
+}
+else alert("Access Denied")
+
+}
+
+function addEmployee(){
+
+let emp={
+
+id:parseInt(id.value),
+name:name.value,
+dept:dept.value,
+pos:pos.value,
+rate:parseFloat(rate.value),
+hours:parseInt(hours.value),
+overtime:parseInt(overtime.value),
+leave:0,
+salaryHistory:[]
+
+}
+
+employees.push(emp)
+
+display()
+
+}
+
+function removeEmployee(){
+
+let eid=parseInt(id.value)
+
+employees=employees.filter(e=>e.id!==eid)
+
+display()
+
+}
+
+function promoteEmployee(){
+
+let eid=parseInt(id.value)
+
+employees.forEach(e=>{
+if(e.id===eid)
+e.pos=prompt("New Position")
+})
+
+display()
+
+}
+
+function increment(){
+
+let eid=parseInt(id.value)
+
+employees.forEach(e=>{
+
+if(e.id===eid){
+
+let inc=parseFloat(prompt("Increment Amount"))
+
+let last=e.salaryHistory.length>0 ? e.salaryHistory[e.salaryHistory.length-1] : 0
+
+e.salaryHistory.push(last+inc)
+
+}
+
+})
+
+}
+
+function leave(){
+
+let eid=parseInt(id.value)
+
+employees.forEach(e=>{
+
+if(e.id===eid)
+e.leave+=parseInt(prompt("Leave Days"))
+
+})
+
+}
+
+function calculateSalary(e){
+
+let effective=e.hours-(e.leave*8)
+
+if(effective<0) effective=0
+
+let normal=e.rate*effective
+
+let overtime=e.overtime*e.rate*1.5
+
+let gross=normal+overtime
+
+let tax=gross>60000 ? gross*0.1 : gross*0.05
+
+let net=gross-tax
+
+e.salaryHistory.push(net)
+
+return net
+
+}
+
+function salarySlip(){
+
+let eid=parseInt(id.value)
+
+employees.forEach(e=>{
+
+if(e.id===eid){
+
+let salary=calculateSalary(e)
+
+alert(
+
+"Salary Slip\n"+
+"Name: "+e.name+"\n"+
+"Department: "+e.dept+"\n"+
+"Position: "+e.pos+"\n"+
+"Salary: "+salary
+
+)
+
+}
+
+})
+
+}
+
+function display(){
+
+let table=document.getElementById("table")
+
+table.innerHTML=
+
+`<tr>
+<th>ID</th>
+<th>Name</th>
+<th>Department</th>
+<th>Position</th>
+<th>Salary</th>
+</tr>`
+
+employees.forEach(e=>{
+
+let row=`<tr>
+<td>${e.id}</td>
+<td>${e.name}</td>
+<td>${e.dept}</td>
+<td>${e.pos}</td>
+<td>${calculateSalary(e)}</td>
+</tr>`
+
+table.innerHTML+=row
+
+})
+
+}
+
+function statistics(){
+
+let map={}
+
+employees.forEach(e=>{
+
+map[e.dept]=(map[e.dept]||0)+1
+
+})
+
+let result="Department Statistics\n"
+
+for(let d in map)
+
+result+=d+" : "+map[d]+"\n"
+
+alert(result)
+
+}
+
+function analytics(){
+
+let total=0
+
+employees.forEach(e=>{
+
+total+=calculateSalary(e)
+
+})
+
+let avg=employees.length?total/employees.length:0
+
+alert("Total Payroll: "+total+"\nAverage Salary: "+avg)
+
+}
+
+</script>
+
+</body>
+</html>
