@@ -61,10 +61,4 @@ Notes
 - These files appear to be small lab or example programs; review each source file for input expectations before running.
 - If any file requires additional libraries or a specific folder structure, update the README or ask and I'll add precise steps.
 
-License
--------
-No license specified.
 
-Questions?
-----------
-Tell me if you want: run commands executed, tests added, or the README expanded with examples.
